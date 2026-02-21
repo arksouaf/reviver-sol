@@ -9,6 +9,7 @@ import RadarAnimation from '@/components/RadarAnimation';
 import DustList from '@/components/DustList';
 import ActionButtons from '@/components/ActionButtons';
 import StatsBar from '@/components/StatsBar';
+import GlobalStats from '@/components/GlobalStats';
 import SuccessToast from '@/components/SuccessToast';
 import DisclaimerModal from '@/components/DisclaimerModal';
 import { useSolPrice } from '@/lib/useSolPrice';
@@ -173,6 +174,19 @@ export default function Home() {
       );
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 5000);
+
+      // Record stats to global leaderboard
+      if (publicKey) {
+        fetch('/api/stats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: publicKey.toBase58(),
+            solRecovered: solReclaimed,
+            accountsClosed: totalClosed,
+          }),
+        }).catch(() => {});
+      }
     } catch (err: any) {
       console.error('Reclaim failed:', err);
       setReclaimError(err?.message || 'Transaction failed');
@@ -247,6 +261,9 @@ export default function Home() {
               />
             </div>
           </div>
+
+          {/* Community Stats */}
+          <GlobalStats />
         </div>
       </div>
 
