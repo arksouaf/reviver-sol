@@ -30,7 +30,7 @@ export default function GlobalStats() {
     return () => clearInterval(id);
   }, []);
 
-  if (!stats || (stats.totalUsers === 0 && stats.totalAccountsClosed === 0)) return null;
+  if (!stats) return null;
 
   return (
     <div className="mt-12 mb-4">
@@ -52,9 +52,9 @@ export default function GlobalStats() {
         <div className="bg-white/5 backdrop-blur-sm border border-[#14F195]/20 rounded-xl p-5 text-center hover:border-[#14F195]/40 transition-all">
           <Coins className="w-6 h-6 text-[#14F195] mx-auto mb-2" />
           <p className="text-2xl font-bold text-white">
-            {stats.totalSolRecovered.toLocaleString(undefined, {
+            {Number(stats.totalSolRecovered).toLocaleString(undefined, {
               minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
+              maximumFractionDigits: 4,
             })}{' '}
             <span className="text-[#14F195] text-lg">SOL</span>
           </p>

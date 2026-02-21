@@ -19,7 +19,7 @@ export async function GET() {
 
   return NextResponse.json({
     totalUsers: totalUsers ?? 0,
-    totalSolRecovered: totalSolRecovered ?? 0,
+    totalSolRecovered: Number(totalSolRecovered ?? 0),
     totalAccountsClosed: totalAccountsClosed ?? 0,
   });
 }
