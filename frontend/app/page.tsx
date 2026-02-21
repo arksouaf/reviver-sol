@@ -43,6 +43,7 @@ export default function Home() {
   const [batches, setBatches] = useState<CloseAccountsBatch[]>([]);
   const [scanError, setScanError] = useState<string | null>(null);
   const [walletBalanceLamports, setWalletBalanceLamports] = useState<number>(0);
+  const [hasPromo, setHasPromo] = useState(false);
 
   // ── Reclaim state ──
   const [batchProgress, setBatchProgress] = useState<BatchProgress | null>(null);
@@ -63,7 +64,7 @@ export default function Home() {
   // ── Derived ──
   const closableCount = emptyAccounts.filter((a) => !a.isFrozen).length;
   const reclaimableSOL = estimateReclaimableSOL(closableCount);
-  const devFee = estimateDevFee(closableCount);
+  const devFee = hasPromo ? 0 : estimateDevFee(closableCount);
 
   // ── Toggle handler for "include non-empty" mode ──
   const handleToggleNonEmpty = useCallback((enabled: boolean) => {
@@ -76,6 +77,7 @@ export default function Home() {
       setBatches([]);
       setFrozenCount(0);
       setWithheldFeesCount(0);
+      setHasPromo(false);
       setAppState('idle');
     }
   }, []);
@@ -88,6 +90,7 @@ export default function Home() {
     setBatches([]);
     setFrozenCount(0);
     setWithheldFeesCount(0);
+    setHasPromo(false);
     setAppState('idle');
   }, []);
 
@@ -105,6 +108,7 @@ export default function Home() {
     setEmptyAccounts([]);
     setFrozenCount(0);
     setWithheldFeesCount(0);
+    setHasPromo(false);
     setBatches([]);
     setCompletedBatches(0);
     setTotalAccountsClosed(0);
@@ -121,6 +125,7 @@ export default function Home() {
       setWithheldFeesCount(result.withheldFeesCount);
       setBatches(result.batches);
       setWalletBalanceLamports(result.walletBalanceLamports);
+      setHasPromo(result.hasPromo);
       setAppState('scanned');
     } catch (err: any) {
       console.error('Scan failed:', err);
@@ -228,6 +233,7 @@ export default function Home() {
                 walletBalanceSOL={walletBalanceLamports / 1e9}
                 includeNonEmpty={includeNonEmpty}
                 onToggleNonEmpty={handleToggleNonEmpty}
+                hasPromo={hasPromo}
               />
             </div>
 

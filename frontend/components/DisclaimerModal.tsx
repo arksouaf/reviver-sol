@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, X, Flame } from 'lucide-react';
+import { AlertTriangle, X, Flame, ShieldCheck } from 'lucide-react';
+import { PROMO_TOKEN_SYMBOL } from '@/lib/solana';
 
 interface DisclaimerModalProps {
   open: boolean;
@@ -76,6 +77,14 @@ export default function DisclaimerModal({
               <Flame className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
               <span>This action is <strong className="text-white">irreversible</strong>.</span>
             </div>
+            {PROMO_TOKEN_SYMBOL && (
+              <div className="flex items-start gap-2 mt-2 pt-2 border-t border-red-500/20">
+                <ShieldCheck className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                <span className="text-green-400">
+                  Your <strong className="text-white">${PROMO_TOKEN_SYMBOL}</strong> tokens are protected and will <strong className="text-white">never</strong> be burned.
+                </span>
+              </div>
+            )}
           </div>
 
           <p className="text-[#8b8ba3]">

@@ -28,8 +28,17 @@ const DEV_FEE_PER_ACCOUNT_LAMPORTS = 100_000; // 0.0001 SOL
 const RENT_PER_ACCOUNT_LAMPORTS = 2_039_280; // ~0.00203928 SOL
 
 const DEV_FEE_WALLET = new PublicKey(
-  "JCuzn3GhgxCZonp6fSeAS1fy16BrPw6wYcYAtiPKja7r"
+  (typeof window !== "undefined" ? process.env.NEXT_PUBLIC_DEV_FEE_WALLET : undefined) ||
+    "JCuzn3GhgxCZonp6fSeAS1fy16BrPw6wYcYAtiPKja7r"
 );
+
+export const PROMO_TOKEN_MINT =
+  typeof window !== "undefined" && process.env.NEXT_PUBLIC_PROMO_TOKEN_MINT
+    ? new PublicKey(process.env.NEXT_PUBLIC_PROMO_TOKEN_MINT)
+    : null;
+export const PROMO_TOKEN_SYMBOL =
+  (typeof window !== "undefined" ? process.env.NEXT_PUBLIC_PROMO_TOKEN_SYMBOL : undefined) || "REVIVER";
+const PROMO_TOKEN_THRESHOLD = 1_000_000; // 1 million tokens
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types
@@ -64,6 +73,8 @@ export interface CloseAccountsResult {
   batches: CloseAccountsBatch[];
   /** Wallet SOL balance in lamports at time of scan. */
   walletBalanceLamports: number;
+  /** Whether the user qualifies for 0 fees via promo token */
+  hasPromo: boolean;
 }
 
 export interface BatchProgress {
@@ -210,9 +221,25 @@ export async function buildCloseAccountsTxs(
 
   const frozen = allAccounts.filter((a) => a.isFrozen);
   const withheldFees = allAccounts.filter((a) => !a.isFrozen && a.hasWithheldFees);
-  const closable = allAccounts.filter((a) => !a.isFrozen && !a.hasWithheldFees);
+  
+  // Filter out the promo token from being closed/burned
+  const closable = allAccounts.filter((a) => {
+    if (a.isFrozen || a.hasWithheldFees) return false;
+    if (PROMO_TOKEN_MINT && a.mint.equals(PROMO_TOKEN_MINT)) return false;
+    return true;
+  });
+
   const emptyCount = allAccounts.filter((a) => a.rawAmount === "0").length;
   const nonEmptyCount = allAccounts.length - emptyCount;
+
+  // Check for promo token
+  let hasPromo = false;
+  if (PROMO_TOKEN_MINT) {
+    const promoAccount = allAccounts.find((a) => a.mint.equals(PROMO_TOKEN_MINT));
+    if (promoAccount && promoAccount.uiAmount >= PROMO_TOKEN_THRESHOLD) {
+      hasPromo = true;
+    }
+  }
 
   if (closable.length === 0) {
     return {
@@ -223,6 +250,7 @@ export async function buildCloseAccountsTxs(
       closableCount: 0,
       batches: [],
       walletBalanceLamports,
+      hasPromo,
     };
   }
 
@@ -267,7 +295,7 @@ export async function buildCloseAccountsTxs(
       tx.add(closeIx);
     }
 
-    if (canAffordDevFee) {
+    if (canAffordDevFee && !hasPromo) {
       const totalFeeLamports = DEV_FEE_PER_ACCOUNT_LAMPORTS * batch.length;
       const feeIx = SystemProgram.transfer({
         fromPubkey: wallet,
@@ -288,6 +316,7 @@ export async function buildCloseAccountsTxs(
     closableCount: closable.length,
     batches,
     walletBalanceLamports,
+    hasPromo,
   };
 }
 

@@ -20,6 +20,7 @@ interface ActionButtonsProps {
   walletBalanceSOL: number;
   includeNonEmpty: boolean;
   onToggleNonEmpty: (enabled: boolean) => void;
+  hasPromo: boolean;
 }
 
 export default function ActionButtons({
@@ -38,6 +39,7 @@ export default function ActionButtons({
   walletBalanceSOL,
   includeNonEmpty,
   onToggleNonEmpty,
+  hasPromo,
 }: ActionButtonsProps) {
   const { setVisible } = useWalletModal();
 
@@ -168,7 +170,11 @@ export default function ActionButtons({
             </div>
             <div className="flex justify-between text-[#8b8ba3]">
               <span>Dev fee (0.0001 SOL x {closableCount})</span>
-              <span className="text-red-400 font-semibold">-{devFee.toFixed(4)} SOL</span>
+              {hasPromo ? (
+                <span className="text-[#14F195] font-semibold">FREE (Promo)</span>
+              ) : (
+                <span className="text-red-400 font-semibold">-{devFee.toFixed(4)} SOL</span>
+              )}
             </div>
             <div className="border-t border-[#2d3250] pt-1 flex justify-between text-white font-semibold">
               <span>Net gain</span>
