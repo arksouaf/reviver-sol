@@ -1,6 +1,7 @@
 'use client';
 
-import { Zap } from 'lucide-react';
+import { useState } from 'react';
+import { Zap, Github, Copy, CheckCircle2 } from 'lucide-react';
 import { useWalletModal } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { shortenAddress } from '@/lib/solana';
@@ -8,9 +9,60 @@ import { shortenAddress } from '@/lib/solana';
 export default function Header() {
   const { setVisible } = useWalletModal();
   const { publicKey, connected, disconnect } = useWallet();
+  const [copied, setCopied] = useState(false);
+
+  const tokenAddress = process.env.NEXT_PUBLIC_PROMO_TOKEN_MINT || 'TBD...';
+  const tokenSymbol = process.env.NEXT_PUBLIC_PROMO_TOKEN_SYMBOL || 'REVIVER';
+  const githubRepo = 'https://github.com/arksouaf/reviver-sol';
+
+  const handleCopy = () => {
+    if (tokenAddress !== 'TBD...') {
+      navigator.clipboard.writeText(tokenAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
-    <header className="border-b border-[#2d3250] backdrop-blur-sm bg-background/50">
+    <>
+      {/* Top Announcement Banner */}
+      <div className="bg-gradient-to-r from-[#9945FF]/20 via-[#14F195]/10 to-[#9945FF]/20 border-b border-[#14F195]/20 py-2 px-4 text-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          {/* Token Info */}
+          <div className="flex items-center gap-2 text-[#c0c0d0]">
+            <span className="font-semibold text-white">${tokenSymbol} Token:</span>
+            <code className="bg-black/30 px-2 py-0.5 rounded text-[#14F195] font-mono text-xs">
+              {tokenAddress === 'TBD...' ? tokenAddress : shortenAddress(tokenAddress, 8)}
+            </code>
+            {tokenAddress !== 'TBD...' && (
+              <button
+                onClick={handleCopy}
+                className="p-1 hover:bg-white/10 rounded transition-colors"
+                title="Copy Address"
+              >
+                {copied ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#14F195]" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-[#8b8ba3] hover:text-white" />
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* GitHub Link */}
+          <a
+            href={githubRepo}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[#8b8ba3] hover:text-white transition-colors font-medium"
+          >
+            <Github className="w-4 h-4" />
+            <span>100% Open Source</span>
+          </a>
+        </div>
+      </div>
+
+      <header className="border-b border-[#2d3250] backdrop-blur-sm bg-background/50">
       <div className="px-4 md:px-8 py-4 max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
@@ -47,5 +99,6 @@ export default function Header() {
         )}
       </div>
     </header>
+    </>
   );
 }
